@@ -101,16 +101,12 @@ def start_server(launch_args):
                 saved_files.append(filename)
 
 
-        print("HERE!")
         for filename in listdir(app.config['UPLOAD_FOLDER']): # For each file, we're going to move to correct user folder.
             source_path = path.join(app.config['UPLOAD_FOLDER'], filename)
             text_file_data  = package_text_data(source_path)
             username, userid = get_author(text_file_data)
             dest_path = path.join(app.config['DATA_FOLDER'], userid, filename)
             makedirs(path.join(app.config['DATA_FOLDER'], userid), exist_ok=True)
-
-            print(source_path)
-            print(dest_path)
             move(source_path , dest_path)
             #time_created, time_modified, filename_timestamp, text_file_data_timestamp = get_log_time(text_file_data, filename)
             #utc_offset = get_utc_offset(time_created, filename_timestamp)

@@ -1,5 +1,18 @@
-def process_logs(filename):
-    return "Test"
+def process_logs(text_file_data):
+    # List of events to be tracked:
+    track_events = [
+        "[Behaviour] Joining wrld", #eg.  [Behaviour] Joining wrld_074e42c2-c117-415d-817a-452a67c95200:28421~group(grp_9a2be521-7faa-432b-9171-f15313e4daef)~groupAccessType(public)~region(us)
+        "[Behaviour] Entering Room",
+        "[Behaviour] OnPlayerLeft",
+        "[Behaviour] OnPlayerJoined"
+    ]
+    events_log = []
+    # Events format: time, event, sub-event
+    for line in text_file_data:
+        for event in track_events:
+            if event in line:
+                # Do thing here
+                pass
 
 
 def get_utc_offset(time_created, filename_timestamp):
