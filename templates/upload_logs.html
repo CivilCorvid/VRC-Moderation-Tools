@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Logs</title>
+    <script>
+        function handleFiles(files) {
+            let formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append("file", files[i]);
+            }
+
+            fetch("/transfer_logs", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => alert(data.success || data.error))
+            .catch(error => console.error("Error:", error));
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            let dropArea = document.getElementById("drop-area");
+
+            dropArea.addEventListener("dragover", function (event) {
+                event.preventDefault();
+                dropArea.classList.add("highlight");
+            });
+
+            dropArea.addEventListener("dragleave", function () {
+                dropArea.classList.remove("highlight");
+            });
+
+            dropArea.addEventListener("drop", function (event) {
+                event.preventDefault();
+                dropArea.classList.remove("highlight");
+                handleFiles(event.dataTransfer.files);
+            });
+
+            document.getElementById("file-input").addEventListener("change", function () {
+                handleFiles(this.files);
+            });
+        });
+    </script>
+    <style>
+        #drop-area {
+            width: 300px;
+            height: 200px;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        #drop-area.highlight {
+            border-color: green;
+        }
+    </style>
+</head>
+<body>
+    <h2>Upload Logs</h2>
+    <div id="drop-area">Drop files here or click to upload</div>
+    <input type="file" id="file-input" multiple>
+</body>
+</html>
