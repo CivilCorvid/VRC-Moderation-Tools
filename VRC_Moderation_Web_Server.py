@@ -4,7 +4,7 @@
 # Imports
 import argparse
 import time
-from Process_Logs import process_logs, package_text_data, get_author, get_log_time, get_utc_offset
+from Process_Logs import process_logs, package_text_data, get_author, write_data_to_database
 
 def verify_files_allowed(filename):
     allowed_filenames = {".txt",".log"}
@@ -69,6 +69,7 @@ def start_server(launch_args):
 
     app.config['UPLOAD_FOLDER'] = launch_args.uploadfolder
     app.config['DATA_FOLDER'] = launch_args.datafolder
+    app.config['DATABASE_FILE'] = launch_args.database
     makedirs(launch_args.uploadfolder, exist_ok=True) # Makes the upload folder if it doesn't exist.
 
     # Browser functions
@@ -102,14 +103,17 @@ def start_server(launch_args):
 
 
         for filename in listdir(app.config['UPLOAD_FOLDER']): # For each file, we're going to move to correct user folder.
+            # Process logs before relocating:
             source_path = path.join(app.config['UPLOAD_FOLDER'], filename)
-            text_file_data  = package_text_data(source_path)
+            text_file_data = package_text_data(source_path)
             username, userid = get_author(text_file_data)
+            events_log = process_logs(text_file_data, source_path, username, userid)
+            write_data_to_database(events_log, app.config['DATABASE_FILE'])
+            # Move over the logs
+
             dest_path = path.join(app.config['DATA_FOLDER'], userid, filename)
             makedirs(path.join(app.config['DATA_FOLDER'], userid), exist_ok=True)
             move(source_path , dest_path)
-            #time_created, time_modified, filename_timestamp, text_file_data_timestamp = get_log_time(text_file_data, filename)
-            #utc_offset = get_utc_offset(time_created, filename_timestamp)
         if saved_files:
             return jsonify({'success': f'Files uploaded: {", ".join(saved_files)}'}), 200
         return jsonify({'error': 'No valid files uploaded'}), 400
