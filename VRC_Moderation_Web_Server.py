@@ -5,7 +5,8 @@
 import argparse
 import time
 from Process_Logs import process_logs, package_text_data, get_author, write_data_to_database
-
+from Display_Events import get_events,  process_sessions
+import sqlite3
 def verify_files_allowed(filename):
     allowed_filenames = {".txt",".log"}
     if any(filename.endswith(file_ext) for file_ext in allowed_filenames):
@@ -117,7 +118,23 @@ def start_server(launch_args):
         if saved_files:
             return jsonify({'success': f'Files uploaded: {", ".join(saved_files)}'}), 200
         return jsonify({'error': 'No valid files uploaded'}), 400
-
+    @app.route('/view_logs')
+    def view_logs():
+        events = get_events(app.config['DATABASE_FILE'])
+        sessions_by_user = process_sessions(events)
+        import datetime
+        timeline_data = []
+        for userid, user_data in sessions_by_user.items():
+            event_username = user_data["username"]
+            for session in user_data["sessions"]:
+                start_dt = datetime.datetime.fromtimestamp(session["start"])
+                end_dt = datetime.datetime.fromtimestamp(session["end"])
+                timeline_data.append({
+                    "username": event_username,
+                    "start": start_dt.isoformat(),
+                    "end": end_dt.isoformat()
+                })
+        return render_template('view_logs.html', timeline_data=timeline_data)
     # Starts server.
     app.run(host='0.0.0.0', port=5000, debug=True)
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ def write_data_to_database(events_log, database_filename):
                 userid TEXT NOT NULL,
                 time INTEGER NOT NULL,
                 event TEXT NOT NULL,
-                subevent TEXT NOT NULL
+                subevent TEXT
             )
         ''')
     pointer.executemany("INSERT INTO events (username, userid, time, event, subevent) VALUES (?, ?, ?, ?, ?)", events_log)
@@ -27,7 +27,9 @@ def process_logs(text_file_data, source_path, username, userid):
         "[Behaviour] Entering Room: ",
         "[Behaviour] OnPlayerLeft ",
         "[Behaviour] OnPlayerJoined ",
-        " Error      -"
+        "[Behaviour] OnPlayerLeftRoom",
+        "[Player] OnApplicationQuit"
+#        " Error      -"
     ]
     events_log = []
     # Events format: time, event, sub-event
@@ -49,8 +51,9 @@ def process_logs(text_file_data, source_path, username, userid):
                 unix_time = int(dt.timestamp())
 
                 # sub-event data
-                sub_event = line.split(event)[-1]
+                sub_event = line.split(event)[-1].replace("\n","")
                 event_info = [unix_time, username, userid, event, sub_event]
+                # print(event_info)
                 events_log.append(event_info)
 
     return events_log

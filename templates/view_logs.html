@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>View Logs Timeline</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      // All shamelessly stolen and conglomerated from stack exchange.
+      google.charts.load('current', {'packages':['timeline']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        var container = document.getElementById('timeline');
+        var chart = new google.visualization.Timeline(container);
+        var dataTable = new google.visualization.DataTable();
+		
+        dataTable.addColumn({ type: 'string', id: 'User' });
+        dataTable.addColumn({ type: 'string', id: 'Session' });
+        dataTable.addColumn({ type: 'datetime', id: 'Start' });
+        dataTable.addColumn({ type: 'datetime', id: 'End' });
+
+        // literal magic
+        var rawData = {{ timeline_data|tojson }};
+        var rows = [];
+        for (var i = 0; i < rawData.length; i++) {
+          var entry = rawData[i];
+          // Convert strings to js date objects.
+          var startDate = new Date(entry.start);
+          var endDate = new Date(entry.end);
+          // username for row and sess label
+          rows.push([ entry.username, 'Session', startDate, endDate ]);
+        }
+        dataTable.addRows(rows);
+
+        var options = {
+          timeline: { showBarLabels: true },
+          avoidOverlappingGridLines: false
+        };
+        chart.draw(dataTable, options);
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Session Timeline</h1>
+    <p>User login session time.</p>
+    <div id="timeline" style="height: 600px;"></div>
+  </body>
+</html>
